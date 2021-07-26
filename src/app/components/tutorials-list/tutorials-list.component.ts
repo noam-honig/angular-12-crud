@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Tutorial } from 'src/app/models/tutorial.model';
-import { TutorialService } from 'src/app/services/tutorial.service';
+import { Context } from 'remult';
+
 
 @Component({
   selector: 'app-tutorials-list',
@@ -10,19 +11,19 @@ import { TutorialService } from 'src/app/services/tutorial.service';
 export class TutorialsListComponent implements OnInit {
 
   tutorials?: Tutorial[];
-  currentTutorial: Tutorial = {};
+  currentTutorial: Tutorial = this.context.for(Tutorial).create();
   currentIndex = -1;
   title = '';
 
-  constructor(private tutorialService: TutorialService) { }
+  constructor(private context: Context) { }
 
   ngOnInit(): void {
     this.retrieveTutorials();
   }
 
   retrieveTutorials(): void {
-    this.tutorialService.getAll()
-      .subscribe(
+    this.context.for(Tutorial).find()
+      .then(
         data => {
           this.tutorials = data;
           console.log(data);
@@ -34,7 +35,7 @@ export class TutorialsListComponent implements OnInit {
 
   refreshList(): void {
     this.retrieveTutorials();
-    this.currentTutorial = {};
+    this.currentTutorial = this.context.for(Tutorial).create();
     this.currentIndex = -1;
   }
 
@@ -44,8 +45,8 @@ export class TutorialsListComponent implements OnInit {
   }
 
   removeAllTutorials(): void {
-    this.tutorialService.deleteAll()
-      .subscribe(
+    Tutorial.removeAll()
+      .then(
         response => {
           console.log(response);
           this.refreshList();
@@ -56,11 +57,11 @@ export class TutorialsListComponent implements OnInit {
   }
 
   searchTitle(): void {
-    this.currentTutorial = {};
+    this.currentTutorial = this.context.for(Tutorial).create();
     this.currentIndex = -1;
 
-    this.tutorialService.findByTitle(this.title)
-      .subscribe(
+    this.context.for(Tutorial).find({ where: t => t.title.contains(this.title) })
+      .then(
         data => {
           this.tutorials = data;
           console.log(data);
